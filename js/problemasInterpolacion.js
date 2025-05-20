@@ -1,78 +1,161 @@
-// problemasInterpolacion.js
+function generarPuntos(nivel) {
+  const cantidad = 3 + nivel; // Nivel 1: 4 puntos, Nivel 2: 5, Nivel 3: 6
+  const puntos = [];
+  let x = 1;
 
-export function generarInterpolacionLineal() {
-    const x0 = parseFloat((Math.random() * 5 + 1).toFixed(2));
-    const x1 = parseFloat((x0 + Math.random() * 3 + 1).toFixed(2));
-    const fx0 = parseFloat((Math.random() * 10 - 5).toFixed(2));
-    const fx1 = parseFloat((fx0 + Math.random() * 3).toFixed(2));
-    const x = parseFloat(((x0 + x1) / 2).toFixed(2));
-    const fx = fx0 + (fx1 - fx0) / (x1 - x0) * (x - x0);
-    const puntos = [[x0, fx0], [x1, fx1]];
-    return {
-      texto: `Interpolación lineal: Estimar f(${x}) usando puntos (x₀, f₀): (${x0}, ${fx0}) y (x₁, f₁): (${x1}, ${fx1})`,
-      respuesta: fx.toFixed(3)
-    };
+  for (let i = 0; i < cantidad; i++) {
+    const fx = parseFloat((Math.pow(x, 2) + 1).toFixed(2)); // f(x) = x² + 1
+    puntos.push({ x, y: fx });
+    x += 1;
   }
-  
-  export function generarNewtonAdelante() {
-    const x0 = 0, h = 1;
-    const y = [2.0, 2.7, 3.8, 5.1];
-    const x = 2.5;
-    const q = (x - x0) / h;
-    const d1 = y[1] - y[0];
-    const d2 = y[2] - 2 * y[1] + y[0];
-    const d3 = y[3] - 3 * y[2] + 3 * y[1] - y[0];
-    const f = y[0] + q * d1 + (q * (q - 1) * d2) / 2 + (q * (q - 1) * (q - 2) * d3) / 6;
-    return {
-      texto: `Newton hacia adelante: Estimar f(${x}) con tabla y = [${y.join(', ')}]`,
-      respuesta: f.toFixed(3)
-    };
-  }
-  
-  export function generarNewtonAtras() {
-    const x0 = 0, h = 1;
-    const y = [2.0, 2.7, 3.8, 5.1];
-    const x = 1.5;
-    const q = (x - (x0 + 3 * h)) / h;
-    const d1 = y[3] - y[2];
-    const d2 = y[3] - 2 * y[2] + y[1];
-    const d3 = y[3] - 3 * y[2] + 3 * y[1] - y[0];
-    const f = y[3] + q * d1 + (q * (q + 1) * d2) / 2 + (q * (q + 1) * (q + 2) * d3) / 6;
-    return {
-      texto: `Newton hacia atrás: Estimar f(${x}) con tabla y = [${y.join(', ')}]`,
-      respuesta: f.toFixed(3)
-    };
-  }
-  
-  export function generarDiferenciasDivididas() {
-    const puntos = [[1, 2], [2, 3], [4, 7]];
-    const x = 3;
-    const f01 = (puntos[1][1] - puntos[0][1]) / (puntos[1][0] - puntos[0][0]);
-    const f12 = (puntos[2][1] - puntos[1][1]) / (puntos[2][0] - puntos[1][0]);
-    const f012 = (f12 - f01) / (puntos[2][0] - puntos[0][0]);
-    const f = puntos[0][1] + f01 * (x - puntos[0][0]) + f012 * (x - puntos[0][0]) * (x - puntos[1][0]);
-    return {
-      texto: `Diferencias divididas: Estimar f(${x}) con puntos (1,2), (2,3), (4,7)`,
-      respuesta: f.toFixed(3)
-    };
-  }
-  
-  export function generarLagrange() {
-    const puntos = [[1, 2], [2, 3], [4, 7]];
-    const x = 3;
-    let resultado = 0;
-    for (let i = 0; i < puntos.length; i++) {
-      let termino = puntos[i][1];
-      for (let j = 0; j < puntos.length; j++) {
-        if (j !== i) {
-          termino *= (x - puntos[j][0]) / (puntos[i][0] - puntos[j][0]);
-        }
-      }
-      resultado += termino;
+
+  return puntos;
+}
+
+export function generarInterpolacionLineal(nivel = 1) {
+  const puntos = generarPuntos(nivel);
+  const xBuscar = puntos[1].x + 0.5;
+  const yInterpolado = puntos[1].y + (puntos[2].y - puntos[1].y) / (puntos[2].x - puntos[1].x) * (xBuscar - puntos[1].x);
+
+  const texto = `Resuelve por método de interpolación lineal en x=${xBuscar.toFixed(2)}<br>` +
+    puntos.map(p => `(${p.x}, ${p.y})`).join(', ');
+
+  return {
+    texto,
+    respuesta: yInterpolado.toFixed(3)
+  };
+}
+
+export function generarNewtonAdelante(nivel = 1) {
+  const puntos = generarPuntos(nivel);
+  const xBuscar = puntos[1].x + 0.5;
+
+  // Para simplificar, asumimos tabla equiespaciada con Δx = 1
+  const h = 1;
+  const y = puntos.map(p => p.y);
+  const n = y.length;
+
+  // Crear diferencias progresivas
+  const diferencias = [y.slice()];
+  for (let i = 1; i < n; i++) {
+    const anterior = diferencias[i - 1];
+    const actual = [];
+    for (let j = 0; j < anterior.length - 1; j++) {
+      actual.push(parseFloat((anterior[j + 1] - anterior[j]).toFixed(5)));
     }
-    return {
-      texto: `Interpolación de Lagrange: Estimar f(${x}) con puntos (1,2), (2,3), (4,7)`,
-      respuesta: resultado.toFixed(3)
-    };
+    diferencias.push(actual);
   }
-  
+
+  // Evaluar Newton adelante
+  let resultado = y[0];
+  let t = (xBuscar - puntos[0].x) / h;
+  let prod = 1;
+  for (let i = 1; i < n; i++) {
+    prod *= (t - (i - 1));
+    resultado += (prod * diferencias[i][0]) / factorial(i);
+  }
+
+  const texto = `Resuelve por método de Newton hacia adelante para x=${xBuscar.toFixed(2)}<br>` +
+    puntos.map(p => `(${p.x}, ${p.y})`).join(', ');
+
+  return {
+    texto,
+    respuesta: resultado.toFixed(3)
+  };
+}
+
+export function generarNewtonAtras(nivel = 1) {
+  const puntos = generarPuntos(nivel);
+  const xBuscar = puntos[puntos.length - 2].x + 0.5;
+
+  const h = 1;
+  const y = puntos.map(p => p.y);
+  const n = y.length;
+
+  const diferencias = [y.slice()];
+  for (let i = 1; i < n; i++) {
+    const anterior = diferencias[i - 1];
+    const actual = [];
+    for (let j = 0; j < anterior.length - 1; j++) {
+      actual.push(parseFloat((anterior[j + 1] - anterior[j]).toFixed(5)));
+    }
+    diferencias.push(actual);
+  }
+
+  let resultado = y[n - 1];
+  let t = (xBuscar - puntos[n - 1].x) / h;
+  let prod = 1;
+  for (let i = 1; i < n; i++) {
+    prod *= (t + (i - 1));
+    resultado += (prod * diferencias[i][n - 1 - i]) / factorial(i);
+  }
+
+  const texto = `Resuelve por método de Newton hacia atrás para x=${xBuscar.toFixed(2)}<br>` +
+    puntos.map(p => `(${p.x}, ${p.y})`).join(', ');
+
+  return {
+    texto,
+    respuesta: resultado.toFixed(3)
+  };
+}
+
+export function generarDiferenciasDivididas(nivel = 1) {
+  const puntos = generarPuntos(nivel);
+  const xBuscar = puntos[1].x + 0.5;
+
+  const n = puntos.length;
+  const dd = puntos.map(p => [p.y]);
+
+  for (let j = 1; j < n; j++) {
+    for (let i = 0; i < n - j; i++) {
+      const num = dd[i + 1][j - 1] - dd[i][j - 1];
+      const den = puntos[i + j].x - puntos[i].x;
+      dd[i][j] = parseFloat((num / den).toFixed(5));
+    }
+  }
+
+  let resultado = dd[0][0];
+  let prod = 1;
+  for (let j = 1; j < n; j++) {
+    prod *= (xBuscar - puntos[j - 1].x);
+    resultado += dd[0][j] * prod;
+  }
+
+  const texto = `Resuelve por método de diferencias divididas para x=${xBuscar.toFixed(2)}<br>` +
+    puntos.map(p => `(${p.x}, ${p.y})`).join(', ');
+
+  return {
+    texto,
+    respuesta: resultado.toFixed(3)
+  };
+}
+
+export function generarLagrange(nivel = 1) {
+  const puntos = generarPuntos(nivel);
+  const xBuscar = puntos[1].x + 0.5;
+
+  const n = puntos.length;
+  let resultado = 0;
+
+  for (let i = 0; i < n; i++) {
+    let li = 1;
+    for (let j = 0; j < n; j++) {
+      if (i !== j) {
+        li *= (xBuscar - puntos[j].x) / (puntos[i].x - puntos[j].x);
+      }
+    }
+    resultado += li * puntos[i].y;
+  }
+
+  const texto = `Resuelve por método de Lagrange para x=${xBuscar.toFixed(2)}<br>` +
+    puntos.map(p => `(${p.x}, ${p.y})`).join(', ');
+
+  return {
+    texto,
+    respuesta: resultado.toFixed(3)
+  };
+}
+
+function factorial(n) {
+  return n <= 1 ? 1 : n * factorial(n - 1);
+}

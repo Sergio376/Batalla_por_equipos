@@ -9,33 +9,44 @@ import {
 import { generarEcuacionNoLineal } from './problemasNoLineales.js';
 import { generarSistemaLineal } from './problemasLineales.js';
 
+const historialPreguntas = [];
+
 export function obtenerNombreRonda(preguntasRespondidas) {
-  if (preguntasRespondidas <= 3) return 'Interpolación';
-  if (preguntasRespondidas > 3 && preguntasRespondidas <= 6) return 'Ecuaciones no lineales';
-  if (preguntasRespondidas > 6 && preguntasRespondidas <= 9) return 'Sistemas de ecuaciones lineales';
-  return 'Fin del juego';
+  const ronda = Math.floor(preguntasRespondidas / 3) + 1;
+  return `Ronda ${ronda}`;
 }
 
 export function generarPreguntaPorProgreso(preguntasRespondidas) {
-  const historialPreguntas = [];
+  const ronda = Math.floor(preguntasRespondidas / 3) + 1; // Nivel de dificultad (1 a 3)
+  const tipoIndex = preguntasRespondidas % 3;
+
   let nueva;
 
   do {
-    if (preguntasRespondidas <= 3) {
-      const metodos = [
-        generarInterpolacionLineal,
-        generarNewtonAdelante,
-        generarNewtonAtras,
-        generarDiferenciasDivididas,
-        generarLagrange
-      ];
-      nueva = metodos[Math.floor(Math.random() * metodos.length)]();
-    } else if (preguntasRespondidas > 3 && preguntasRespondidas <= 6) {
-      nueva = generarEcuacionNoLineal();
-    } else if (preguntasRespondidas > 6 && preguntasRespondidas <= 9) {
-      nueva = generarSistemaLineal();
-    } else {
-      nueva = { texto: 'Juego finalizado', respuesta: '' };
+    switch (tipoIndex) {
+      case 0: { // Interpolación
+        const metodos = [
+          generarInterpolacionLineal,
+          generarNewtonAdelante,
+          generarNewtonAtras,
+          generarDiferenciasDivididas,
+          generarLagrange
+        ];
+        const metodo = metodos[Math.floor(Math.random() * metodos.length)];
+        nueva = metodo(ronda); // Se le pasa el nivel de dificultad
+        break;
+      }
+
+      case 1: // Ecuaciones no lineales
+        nueva = generarEcuacionNoLineal(ronda);
+        break;
+
+      case 2: // Ecuaciones lineales
+        nueva = generarSistemaLineal(ronda);
+        break;
+
+      default:
+        nueva = { texto: 'Juego finalizado', respuesta: '' };
     }
   } while (historialPreguntas.includes(nueva?.texto));
 
