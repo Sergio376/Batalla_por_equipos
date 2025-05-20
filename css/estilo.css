@@ -1,0 +1,24 @@
+body {
+    height: 100vh;
+    background-image: url("../img/fondo.jpg");
+    background-size: cover;
+    backdrop-filter: blur(3px);
+    font-family: 'Segoe UI', sans-serif;
+  }
+  
+  .card {
+    border-radius: 1rem;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  }
+  
+  h1 {
+    color: #2c3e50;
+  }
+  
+  .blanco{
+    background-color: aliceblue;
+  }
+
+  #mensajeRespuesta {
+    font-size: 1.1rem;
+  }

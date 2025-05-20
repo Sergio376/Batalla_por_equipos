@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Juego Matemático</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="./css/estilo.css">
+</head>
+<body class="bg-light">   
+    <br><br><br><br>
+
+  <div class="container mt-5 border blanco "><br>
+    <h1 class="text-center mb-4">🎓Batalla por Equipos</h1>
+
+    <form id="formEquipos" onsubmit="iniciarJuego(event)">
+      <div class="mb-3">
+        <label for="numEquipos" class="form-label">Cantidad de equipos</label>
+        <select class="form-select" id="numEquipos">
+          <option value="2">2 equipos</option>
+          <option value="3">3 equipos</option>
+          <option value="4">4 equipos</option>
+        </select>
+      </div>
+    
+      <div id="configuracionEquipos"></div>
+    
+      <button type="submit" class="btn btn-primary mt-3">Comenzar juego</button>
+    </form>    
+    <br><br><br>
+  </div>
+
+
+  <script>
+    const formContainer = document.getElementById("configuracionEquipos");
+    const numEquipos = document.getElementById("numEquipos");
+  
+    numEquipos.addEventListener("change", generarCamposEquipos);
+    window.onload = generarCamposEquipos;
+  
+    function generarCamposEquipos() {
+      const cantidad = parseInt(numEquipos.value);
+      formContainer.innerHTML = "";
+  
+      for (let i = 1; i <= cantidad; i++) {
+        formContainer.innerHTML += `
+          <div class="mb-3 border p-3">
+            <label class="form-label fw-bold">Equipo ${i}</label>
+            <input type="text" class="form-control mb-2" placeholder="Nombre del equipo" id="equipoNombre${i}">
+            <label>Integrantes:</label>
+            <select class="form-select mb-2" id="numIntegrantes${i}" onchange="generarIntegrantes(${i})">
+              ${[...Array(5)].map((_, j) => `<option value="${j + 1}">${j + 1}</option>`).join("")}
+            </select>
+            <div id="integrantesEquipo${i}"></div>
+          </div>
+        `;
+        generarIntegrantes(i); // Generar por defecto
+      }
+    }
+  
+    function generarIntegrantes(equipoIndex) {
+      const cantidad = document.getElementById(`numIntegrantes${equipoIndex}`).value;
+      const container = document.getElementById(`integrantesEquipo${equipoIndex}`);
+      container.innerHTML = "";
+  
+      for (let j = 1; j <= cantidad; j++) {
+        container.innerHTML += `
+          <input type="text" class="form-control mb-2" placeholder="Integrante ${j}" id="integrante${equipoIndex}_${j}">
+        `;
+      }
+    }
+  
+    function iniciarJuego(e) {
+      e.preventDefault();
+      const cantidad = parseInt(numEquipos.value);
+      localStorage.setItem("cantidadEquipos", cantidad);
+  
+      for (let i = 1; i <= cantidad; i++) {
+        const nombreEquipo = document.getElementById(`equipoNombre${i}`).value || `Equipo ${i}`;
+        localStorage.setItem(`equipo${i}`, nombreEquipo);
+  
+        const numIntegrantes = parseInt(document.getElementById(`numIntegrantes${i}`).value);
+        const integrantes = [];
+        for (let j = 1; j <= numIntegrantes; j++) {
+          const nombre = document.getElementById(`integrante${i}_${j}`).value || `Integrante ${j}`;
+          integrantes.push(nombre);
+        }
+        localStorage.setItem(`integrantesEquipo${i}`, JSON.stringify(integrantes));
+      }
+  
+      window.location.href = "juego.html";
+    }
+  </script>
+  
+  
+  
+
+
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js" integrity="sha384-I7E8VVD/ismYTF4hNIPjVp/Zjvgyol6VFvRkX/vR+Vc4jQkC+hVqc2pM8ODewa9r" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.min.js" integrity="sha384-VQqxDN0EQCkWoxt/0vsQvZswzTHUVOImccYmSyhJTp7kGtPed0Qcx8rK9h9YEgx+" crossorigin="anonymous"></script>
+  <script src="./js/juego.js"></script>
+</body>
+</html>
