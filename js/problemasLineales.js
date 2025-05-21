@@ -1,26 +1,28 @@
 export function generarSistemaLineal(nivel = 1) {
-  const n = Math.min(3 + (nivel - 1), 5); // 3, 4 o 5 ecuaciones/incógnitas
+  const n = 3;
 
-  // Generamos solución conocida
-  const soluciones = Array.from({ length: n }, () =>
-    parseFloat((Math.random() * 10 - 5).toFixed(1))
+  // Generamos soluciones según nivel
+  const soluciones = Array.from({ length: n }, () => {
+    if (nivel === 1) return Math.floor(Math.random() * 10 + 1); // enteros
+    if (nivel === 2) return parseFloat((Math.random() * 10).toFixed(1)); // 1 decimal
+    return parseFloat(((Math.random() * 20) - 10).toFixed(2)); // decimales y negativos
+  });
+
+  // Generar matriz A
+  const A = Array.from({ length: n }, () =>
+    Array.from({ length: n }, () => {
+      if (nivel === 1) return Math.floor(Math.random() * 5 + 1); // 1–5
+      if (nivel === 2) return Math.floor(Math.random() * 11) - 5; // -5 a 5
+      return parseFloat(((Math.random() * 20) - 10).toFixed(2)); // decimales y negativos
+    })
   );
 
-  // Matriz A con coeficientes aleatorios
-  let A;
-  do {
-    A = Array.from({ length: n }, () =>
-      Array.from({ length: n }, () => Math.floor(Math.random() * 11) - 5)
-    );
-  } while (determinanteCero(A)); // aseguramos que no sea indeterminado
-
-  // Vector B = A · soluciones
+  // B = A * x
   const B = A.map(row =>
-    row.reduce((suma, coef, j) => suma + coef * soluciones[j], 0)
+    row.reduce((sum, coef, j) => sum + coef * soluciones[j], 0)
   );
 
-  // Texto del sistema
-  const letras = ['x', 'y', 'z', 'w', 'v'];
+  const letras = ['x', 'y', 'z'];
   const ecuaciones = A.map((fila, i) => {
     const izq = fila.map((coef, j) => {
       const sign = coef >= 0 && j > 0 ? '+' : '';
@@ -29,9 +31,8 @@ export function generarSistemaLineal(nivel = 1) {
     return `${i + 1}) ${izq} = ${B[i].toFixed(2)}`;
   }).join('<br>');
 
-  const texto = `Sistema de ecuaciones:<br>${ecuaciones}<br>¿Cuánto valen ${letras.slice(0, n).join(', ')}?`;
+  const texto = `Sistema de ecuaciones:<br>${ecuaciones}<br>¿Cuánto valen x, y, z?`;
 
-  // Solo usamos x, y, z para validar
   return {
     texto,
     respuesta: {
@@ -40,16 +41,4 @@ export function generarSistemaLineal(nivel = 1) {
       z: soluciones[2]
     }
   };
-}
-
-// Función para evitar sistemas sin solución única
-function determinanteCero(matriz) {
-  const n = matriz.length;
-  if (n !== 3) return false; // usamos la verificación solo para 3x3 por eficiencia
-
-  return (
-    matriz[0][0] * (matriz[1][1] * matriz[2][2] - matriz[1][2] * matriz[2][1]) -
-    matriz[0][1] * (matriz[1][0] * matriz[2][2] - matriz[1][2] * matriz[2][0]) +
-    matriz[0][2] * (matriz[1][0] * matriz[2][1] - matriz[1][1] * matriz[2][0])
-  ) === 0;
 }
